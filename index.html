@@ -378,7 +378,7 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ── CART STATE ──
 let cart = JSON.parse(localStorage.getItem('mf_cart') || '[]');
 let allProducts = [];
-let activeCategory = 'all';
+let activeCategory = 'All';
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', async () => {
