@@ -208,7 +208,7 @@
   .footer-brand p { font-size:14px; color:var(--slate); line-height:1.7; margin:16px 0 24px; }
   .footer-col h5 { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; letter-spacing:.5px; margin-bottom:16px; }
   .footer-col ul { list-style:none; display:flex; flex-direction:column; gap:10px; }
-  .footer-col ul a { font-size:13.5px; color:var(--slate); text-decoration:none; transition:color .2s; }
+  .footer-col ul a { font-size:13.5px; color:var(--slate); text-decoration:none; transition:color .2s; cursor:pointer; }
   .footer-col ul a:hover { color:var(--white); }
   .footer-bottom { border-top:1px solid var(--border); padding-top:24px; display:flex; justify-content:space-between; align-items:center; font-size:12.5px; color:var(--slate); }
   .payment-icons { display:flex; gap:8px; }
@@ -240,14 +240,14 @@
 <nav>
   <a class="nav-logo" href="/">MF <span>Medical Supplies</span>™</a>
   <ul class="nav-links">
-    <li><a onclick="scrollTo('#products')">Products</a></li>
-    <li><a onclick="scrollTo('#categories')">Categories</a></li>
+    <li><a onclick="scrollToSection('#products')">Products</a></li>
+    <li><a onclick="scrollToSection('#products')">Categories</a></li>
     <li><a href="/admin/">Admin</a></li>
-    <li><a onclick="scrollTo('#faq')">FAQ</a></li>
+    <li><a onclick="scrollToSection('#faq')">FAQ</a></li>
   </ul>
   <div class="nav-right">
     <button class="btn-cart" onclick="openCart()">🛒 Cart <span class="cart-badge" id="cartBadge">0</span></button>
-    <button class="btn-primary" onclick="scrollTo('#products')">Shop Now</button>
+    <button class="btn-primary" onclick="scrollToSection('#products')">Shop Now</button>
   </div>
 </nav>
 
@@ -260,8 +260,8 @@
     <h1 class="hero-title">Premium <em>Medical</em><br>Supplies.<br>Rapid Dispatch.</h1>
     <p class="hero-sub">Precision consumables for clinics, practitioners, and healthcare professionals. Genuine brands. Sterile stock. Same-day shipping from Australian warehouses.</p>
     <div class="hero-cta">
-      <button class="btn-primary" onclick="scrollTo('#products')" style="font-size:15px;padding:12px 28px">Browse Range →</button>
-      <button class="btn-outline" onclick="scrollTo('#categories')">View Categories</button>
+      <button class="btn-primary" onclick="scrollToSection('#products')" style="font-size:15px;padding:12px 28px">Browse Range →</button>
+      <button class="btn-outline" onclick="scrollToSection('#products')">View Categories</button>
     </div>
     <div class="hero-stats">
       <div><div class="stat-val" id="stat-products">—</div><div class="stat-lbl">Products in stock</div></div>
@@ -309,7 +309,7 @@
       <div class="promo-title">10% Off Your First Order</div>
       <div class="promo-sub">Apply at checkout. Valid on all products.</div>
     </div>
-    <button class="btn-primary" onclick="scrollTo('#products')" style="font-size:15px;padding:14px 28px;white-space:nowrap">Shop Now →</button>
+    <button class="btn-primary" onclick="scrollToSection('#products')" style="font-size:15px;padding:14px 28px;white-space:nowrap">Shop Now →</button>
   </div>
 </div>
 
@@ -329,7 +329,7 @@
         <p>Precision medical supplies for Australian healthcare professionals. TGA-compliant consumables from world-leading manufacturers.</p>
         <div class="nl-form"><input type="email" placeholder="Your email"><button class="btn-primary">Subscribe</button></div>
       </div>
-      <div class="footer-col"><h5>Shop</h5><ul><li><a onclick="scrollTo('#products')">All Products</a></li><li><a href="#">Syringes</a></li><li><a href="#">Needles</a></li><li><a href="#">PPE</a></li></ul></div>
+      <div class="footer-col"><h5>Shop</h5><ul><li><a onclick="scrollToSection('#products')">All Products</a></li><li><a onclick="scrollToSection('#products')">Syringes</a></li><li><a onclick="scrollToSection('#products')">Needles</a></li><li><a onclick="scrollToSection('#products')">PPE</a></li></ul></div>
       <div class="footer-col"><h5>Company</h5><ul><li><a href="#">About Us</a></li><li><a href="#">Contact</a></li><li><a href="#">Wholesale</a></li></ul></div>
       <div class="footer-col"><h5>Policies</h5><ul><li><a href="#">Privacy Policy</a></li><li><a href="#">Shipping</a></li><li><a href="#">Returns</a></li><li><a href="#">Terms</a></li></ul></div>
     </div>
@@ -362,19 +362,16 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG — replace these with your real keys ──
 const SUPABASE_URL = 'https://pitkrxeshjvxpdmsjros.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpdGtyeGVzaGp2eHBkbXNqcm9zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3OTA1NTksImV4cCI6MjA5MDM2NjU1OX0.WX8ufV4BZ6OZXwYRrTj-Xc0CrRJT_TJBGm5m8WHUFlc';
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ── CART STATE ──
 let cart = JSON.parse(localStorage.getItem('mf_cart') || '[]');
 let allProducts = [];
 let activeCategory = 'All';
 
-// ── INIT ──
 document.addEventListener('DOMContentLoaded', async () => {
   renderTicker();
   renderFAQ();
@@ -382,10 +379,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadProducts();
 });
 
-// ── PRODUCTS ──
 async function loadProducts() {
   showSkeletons();
-
   const { data, error } = await db
     .from('products')
     .select('*')
@@ -414,7 +409,7 @@ function showSkeletons() {
 function buildCategories() {
   const cats = ['All', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
   document.getElementById('catPills').innerHTML = cats.map(c =>
-    `<button class="cat-pill ${c === 'All' ? 'active' : ''}" onclick="filterCat('${c}')">${c}</button>`
+    `<button class="cat-pill ${c === activeCategory ? 'active' : ''}" onclick="filterCat('${c}')">${c}</button>`
   ).join('');
 }
 
@@ -464,14 +459,10 @@ function productCard(p) {
     </div>`;
 }
 
-// ── CART ──
 function addToCart(product) {
   const existing = cart.find(i => i.id === product.id);
-  if (existing) {
-    existing.quantity++;
-  } else {
-    cart.push({ ...product, quantity: 1 });
-  }
+  if (existing) { existing.quantity++; }
+  else { cart.push({ ...product, quantity: 1 }); }
   saveCart();
   updateCartUI();
   showToast(`✓ ${product.name.slice(0, 30)}… added to cart`);
@@ -480,9 +471,7 @@ function addToCart(product) {
 
 function removeFromCart(id) {
   cart = cart.filter(i => i.id !== id);
-  saveCart();
-  updateCartUI();
-  renderCartItems();
+  saveCart(); updateCartUI(); renderCartItems();
 }
 
 function changeQty(id, delta) {
@@ -490,14 +479,10 @@ function changeQty(id, delta) {
   if (!item) return;
   item.quantity += delta;
   if (item.quantity <= 0) { removeFromCart(id); return; }
-  saveCart();
-  updateCartUI();
-  renderCartItems();
+  saveCart(); updateCartUI(); renderCartItems();
 }
 
-function saveCart() {
-  localStorage.setItem('mf_cart', JSON.stringify(cart));
-}
+function saveCart() { localStorage.setItem('mf_cart', JSON.stringify(cart)); }
 
 function updateCartUI() {
   const total = cart.reduce((sum, i) => sum + i.quantity, 0);
@@ -528,7 +513,6 @@ function renderCartItems() {
       </div>
       <div class="cart-item-price">$${(i.price * i.quantity).toFixed(2)}</div>
     </div>`).join('');
-
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
   document.getElementById('cartTotal').textContent = `$${total.toFixed(2)}`;
 }
@@ -546,14 +530,12 @@ function closeCart() {
   document.body.style.overflow = '';
 }
 
-// ── CHECKOUT ──
 async function checkout() {
   if (cart.length === 0) return;
   const btn = document.getElementById('checkoutBtn');
   const email = document.getElementById('checkoutEmail').value;
   btn.disabled = true;
   btn.textContent = 'Redirecting to payment…';
-
   try {
     const res = await fetch('/api/checkout', {
       method: 'POST',
@@ -577,7 +559,6 @@ async function checkout() {
   }
 }
 
-// ── FAQ ──
 const faqs = [
   { q:'Are all products TGA compliant?', a:'Yes. Every medical device and consumable we stock is registered with the Australian Therapeutic Goods Administration (TGA) to ensure it meets strict safety and quality standards.' },
   { q:'Do you offer bulk or wholesale pricing for clinics?', a:'Yes. For high-volume orders or recurring clinic supplies, please contact our team to discuss wholesale pricing tiers.' },
@@ -601,15 +582,15 @@ function toggleFAQ(i) {
   if (!was) item.classList.add('open');
 }
 
-// ── TICKER ──
 function renderTicker() {
   const items = ['FREE STANDARD DELIVERY','USE CODE MFMED2026 FOR 10% OFF','COMPLIMENTARY ITEM WITH EVERY ORDER','100% TGA COMPLIANT STOCK','DISPATCHED WITHIN 24H'];
   const html = [...items, ...items].map(t => `<span class="ticker-item">${t}</span><span style="padding:0 4px;opacity:.4">✦</span>`).join('');
   document.getElementById('tickerInner').innerHTML = html;
 }
 
-// ── UTILS ──
-function scrollTo(sel) { document.querySelector(sel)?.scrollIntoView({ behavior:'smooth', block:'start' }); }
+function scrollToSection(sel) {
+  document.querySelector(sel)?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
 
 let toastTimer;
 function showToast(msg) {
