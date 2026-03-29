@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MF Medical Supplies™ | Precision Medical Supplies</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0d12; --ink2: #141920; --ink3: #1e2530;
+    --surface: #f5f6f8; --white: #ffffff;
+    --teal: #00c9a7; --teal2: #00a88c; --teal-glow: rgba(0,201,167,0.15);
+    --slate: #8a95a3; --border: rgba(255,255,255,0.07);
+    --red: #ff4d4d;
+  }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'DM Sans',sans-serif; background:var(--ink); color:var(--white); overflow-x:hidden; }
+
+  /* NAV */
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 48px; height:68px;
+    background:rgba(10,13,18,0.95); backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:20px; color:var(--white); text-decoration:none; }
+  .nav-logo span { color:var(--teal); }
+  .nav-links { display:flex; gap:32px; list-style:none; }
+  .nav-links a { font-size:13.5px; font-weight:500; color:var(--slate); text-decoration:none; transition:color .2s; cursor:pointer; }
+  .nav-links a:hover { color:var(--white); }
+  .nav-right { display:flex; align-items:center; gap:16px; }
+  .btn-cart {
+    display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:500;
+    background:var(--ink3); color:var(--white); border:1px solid var(--border);
+    border-radius:8px; padding:8px 16px; cursor:pointer; transition:border-color .2s;
+    text-decoration:none;
+  }
+  .btn-cart:hover { border-color:var(--teal); }
+  .cart-badge { background:var(--teal); color:var(--ink); font-size:11px; font-weight:700; border-radius:999px; padding:1px 7px; }
+  .btn-primary {
+    font-size:13.5px; font-weight:600; background:var(--teal); color:var(--ink);
+    border:none; border-radius:8px; padding:9px 20px; cursor:pointer;
+    transition:background .2s,transform .15s; text-decoration:none; display:inline-block;
+  }
+  .btn-primary:hover { background:var(--teal2); transform:translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    min-height:100vh; display:grid; place-items:center;
+    padding:100px 48px 80px; position:relative; overflow:hidden;
+  }
+  .hero-bg {
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse 60% 50% at 70% 40%, rgba(0,201,167,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 60% at 10% 80%, rgba(0,150,120,0.06) 0%, transparent 60%);
+  }
+  .hero-grid {
+    position:absolute; inset:0;
+    background-image: linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+                      linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+    background-size:48px 48px;
+  }
+  .hero-inner { position:relative; z-index:1; max-width:1200px; width:100%; }
+  .hero-eyebrow {
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--teal); background:var(--teal-glow); border:1px solid rgba(0,201,167,0.2);
+    padding:6px 14px; border-radius:999px; margin-bottom:24px;
+  }
+  .hero-eyebrow::before { content:''; width:6px; height:6px; background:var(--teal); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+  .hero-title { font-family:'Syne',sans-serif; font-size:clamp(42px,5vw,68px); font-weight:800; line-height:1.05; letter-spacing:-2px; margin-bottom:20px; }
+  .hero-title em { font-style:normal; color:var(--teal); }
+  .hero-sub { font-size:16px; line-height:1.7; color:var(--slate); margin-bottom:36px; max-width:540px; }
+  .hero-cta { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .btn-outline { font-size:13.5px; font-weight:500; background:transparent; color:var(--white); border:1px solid var(--border); border-radius:8px; padding:9px 20px; cursor:pointer; transition:border-color .2s; text-decoration:none; }
+  .btn-outline:hover { border-color:rgba(255,255,255,.3); }
+  .hero-stats { display:flex; gap:32px; margin-top:48px; padding-top:32px; border-top:1px solid var(--border); }
+  .stat-val { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-1px; }
+  .stat-val span { color:var(--teal); }
+  .stat-lbl { font-size:12px; color:var(--slate); margin-top:2px; }
+
+  /* TICKER */
+  .ticker { background:var(--teal); color:var(--ink); padding:10px 0; overflow:hidden; white-space:nowrap; }
+  .ticker-inner { display:inline-flex; animation:ticker 30s linear infinite; }
+  .ticker-item { font-size:12.5px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; padding:0 32px; }
+  @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* SECTIONS */
+  .section { padding:80px 48px; max-width:1200px; margin:0 auto; }
+  .section-label { font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--teal); margin-bottom:12px; }
+  .section-title { font-family:'Syne',sans-serif; font-size:clamp(28px,3vw,42px); font-weight:800; letter-spacing:-1.5px; line-height:1.1; margin-bottom:16px; }
+  .flex-between { display:flex; align-items:center; justify-content:space-between; }
+
+  /* CATEGORY PILLS */
+  .cat-pills { display:flex; flex-wrap:wrap; gap:10px; margin:32px 0; }
+  .cat-pill {
+    font-size:13px; font-weight:500; padding:8px 18px; border-radius:999px;
+    background:var(--ink2); border:1px solid var(--border);
+    color:var(--slate); cursor:pointer; transition:all .2s;
+  }
+  .cat-pill:hover, .cat-pill.active { background:var(--teal-glow); border-color:rgba(0,201,167,.3); color:var(--teal); }
+
+  /* PRODUCTS GRID */
+  .products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:20px; }
+  .prod-card {
+    background:var(--ink2); border:1px solid var(--border); border-radius:16px;
+    overflow:hidden; transition:border-color .3s,transform .3s;
+  }
+  .prod-card:hover { border-color:rgba(0,201,167,.3); transform:translateY(-4px); }
+  .prod-img { height:160px; background:var(--ink3); display:grid; place-items:center; font-size:44px; position:relative; border-bottom:1px solid var(--border); }
+  .prod-badge { position:absolute; top:10px; left:10px; font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; padding:3px 9px; border-radius:5px; }
+  .badge-new { background:var(--teal); color:var(--ink); }
+  .badge-hot { background:#ff6b35; color:#fff; }
+  .badge-sale { background:var(--red); color:#fff; }
+  .out-of-stock-overlay { position:absolute; inset:0; background:rgba(10,13,18,.7); display:grid; place-items:center; }
+  .out-badge { background:var(--ink); border:1px solid var(--border); color:var(--slate); font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:6px 14px; border-radius:6px; }
+  .prod-body { padding:18px; }
+  .prod-brand { font-size:10.5px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--teal); margin-bottom:6px; }
+  .prod-name { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; line-height:1.4; margin-bottom:6px; }
+  .prod-desc { font-size:12px; color:var(--slate); line-height:1.5; margin-bottom:12px; }
+  .prod-price-row { display:flex; align-items:center; justify-content:space-between; }
+  .prod-price { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+  .btn-add { font-size:12px; font-weight:600; background:var(--teal-glow); color:var(--teal); border:1px solid rgba(0,201,167,.25); border-radius:8px; padding:7px 14px; cursor:pointer; transition:background .2s; }
+  .btn-add:hover { background:rgba(0,201,167,.25); }
+  .btn-add:disabled { opacity:.4; cursor:not-allowed; }
+
+  /* LOADING */
+  .loading-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:20px; }
+  .skeleton { background:var(--ink2); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+  .skeleton-img { height:160px; background:linear-gradient(90deg,var(--ink2) 25%,var(--ink3) 50%,var(--ink2) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+  .skeleton-body { padding:18px; }
+  .skeleton-line { height:12px; background:linear-gradient(90deg,var(--ink2) 25%,var(--ink3) 50%,var(--ink2) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; margin-bottom:10px; }
+  .skeleton-line.short { width:60%; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* TRUST */
+  .trust-strip { background:var(--ink2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:48px; }
+  .trust-grid { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(3,1fr); gap:32px; text-align:center; }
+  @media(min-width:768px){.trust-grid{grid-template-columns:repeat(6,1fr)}}
+  .trust-icon { font-size:28px; margin-bottom:10px; }
+  .trust-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; margin-bottom:4px; }
+  .trust-desc { font-size:11.5px; color:var(--slate); line-height:1.5; }
+
+  /* CART DRAWER */
+  .cart-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:200; opacity:0; pointer-events:none; transition:opacity .3s; }
+  .cart-overlay.open { opacity:1; pointer-events:all; }
+  .cart-drawer {
+    position:fixed; top:0; right:0; bottom:0; width:420px; z-index:201;
+    background:var(--ink2); border-left:1px solid var(--border);
+    display:flex; flex-direction:column;
+    transform:translateX(100%); transition:transform .35s cubic-bezier(.4,0,.2,1);
+  }
+  .cart-drawer.open { transform:translateX(0); }
+  .cart-head { display:flex; align-items:center; justify-content:space-between; padding:24px 28px; border-bottom:1px solid var(--border); }
+  .cart-head h3 { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+  .cart-close { background:var(--ink3); border:1px solid var(--border); color:var(--white); width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:18px; display:grid; place-items:center; }
+  .cart-items { flex:1; overflow-y:auto; padding:20px 28px; }
+  .cart-empty { text-align:center; padding:60px 0; color:var(--slate); font-size:14px; }
+  .cart-empty .big { font-size:48px; margin-bottom:12px; }
+  .cart-item { display:flex; gap:14px; align-items:flex-start; padding:16px 0; border-bottom:1px solid var(--border); }
+  .cart-item-emoji { width:52px; height:52px; background:var(--ink3); border-radius:10px; display:grid; place-items:center; font-size:22px; flex-shrink:0; }
+  .cart-item-info { flex:1; }
+  .cart-item-name { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; margin-bottom:4px; line-height:1.3; }
+  .cart-item-brand { font-size:11px; color:var(--teal); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+  .cart-item-controls { display:flex; align-items:center; gap:8px; }
+  .qty-btn { width:26px; height:26px; background:var(--ink3); border:1px solid var(--border); color:var(--white); border-radius:6px; cursor:pointer; font-size:14px; display:grid; place-items:center; transition:border-color .2s; }
+  .qty-btn:hover { border-color:var(--teal); }
+  .qty-val { font-size:13px; font-weight:600; min-width:20px; text-align:center; }
+  .cart-item-price { font-family:'Syne',sans-serif; font-size:15px; font-weight:800; flex-shrink:0; }
+  .cart-remove { background:none; border:none; color:var(--slate); cursor:pointer; font-size:16px; padding:2px; transition:color .2s; }
+  .cart-remove:hover { color:var(--red); }
+  .cart-foot { padding:20px 28px; border-top:1px solid var(--border); }
+  .cart-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .cart-total-label { font-size:14px; color:var(--slate); }
+  .cart-total-val { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; }
+  .cart-note { font-size:11.5px; color:var(--slate); margin-bottom:16px; }
+  .email-input { width:100%; background:var(--ink3); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--white); font-family:'DM Sans',sans-serif; font-size:13.5px; outline:none; margin-bottom:12px; transition:border-color .2s; }
+  .email-input:focus { border-color:var(--teal); }
+  .email-input::placeholder { color:var(--slate); }
+  .btn-checkout { width:100%; padding:14px; font-size:15px; font-weight:700; background:var(--teal); color:var(--ink); border:none; border-radius:10px; cursor:pointer; transition:background .2s; }
+  .btn-checkout:hover { background:var(--teal2); }
+  .btn-checkout:disabled { opacity:.5; cursor:not-allowed; }
+
+  /* FAQ */
+  .faq-list { display:flex; flex-direction:column; gap:12px; max-width:760px; }
+  .faq-item { background:var(--ink2); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .faq-q { width:100%; background:none; border:none; color:var(--white); font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500; text-align:left; padding:20px 24px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:color .2s; }
+  .faq-q:hover { color:var(--teal); }
+  .faq-chevron { font-size:18px; transition:transform .3s; color:var(--slate); }
+  .faq-item.open .faq-chevron { transform:rotate(180deg); color:var(--teal); }
+  .faq-a { max-height:0; overflow:hidden; transition:max-height .4s ease,padding .3s; font-size:14px; color:var(--slate); line-height:1.7; padding:0 24px; }
+  .faq-item.open .faq-a { max-height:200px; padding:0 24px 20px; }
+
+  /* PROMO */
+  .promo-banner { background:linear-gradient(135deg,var(--ink2) 0%,var(--ink3) 100%); border:1px solid var(--border); border-radius:20px; padding:48px 56px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:40px; }
+  .promo-code { display:inline-block; font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--teal); background:var(--teal-glow); border:1px dashed rgba(0,201,167,.4); padding:8px 20px; border-radius:10px; letter-spacing:2px; margin-bottom:12px; }
+  .promo-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-1px; }
+  .promo-sub { font-size:14px; color:var(--slate); margin-top:6px; }
+
+  /* FOOTER */
+  footer { background:var(--ink2); border-top:1px solid var(--border); padding:64px 48px 32px; }
+  .footer-inner { max-width:1200px; margin:0 auto; }
+  .footer-top { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px; margin-bottom:48px; }
+  .footer-brand p { font-size:14px; color:var(--slate); line-height:1.7; margin:16px 0 24px; }
+  .footer-col h5 { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; letter-spacing:.5px; margin-bottom:16px; }
+  .footer-col ul { list-style:none; display:flex; flex-direction:column; gap:10px; }
+  .footer-col ul a { font-size:13.5px; color:var(--slate); text-decoration:none; transition:color .2s; }
+  .footer-col ul a:hover { color:var(--white); }
+  .footer-bottom { border-top:1px solid var(--border); padding-top:24px; display:flex; justify-content:space-between; align-items:center; font-size:12.5px; color:var(--slate); }
+  .payment-icons { display:flex; gap:8px; }
+  .payment-icon { background:var(--ink3); border:1px solid var(--border); border-radius:6px; padding:4px 10px; font-size:11px; color:var(--slate); font-weight:600; }
+  .nl-form { display:flex; gap:10px; max-width:400px; }
+  .nl-form input { flex:1; background:var(--ink3); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--white); font-family:'DM Sans',sans-serif; font-size:13.5px; outline:none; }
+  .nl-form input::placeholder { color:var(--slate); }
+  .nl-form input:focus { border-color:var(--teal); }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--ink2); border:1px solid var(--teal); color:var(--white); padding:12px 24px; border-radius:10px; font-size:14px; font-weight:500; z-index:300; transition:transform .3s; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  @media(max-width:768px){
+    nav{padding:0 20px;}
+    .nav-links{display:none;}
+    .hero{padding:90px 20px 60px;}
+    .hero-stats{flex-wrap:wrap;gap:20px;}
+    .section{padding:60px 20px;}
+    .promo-banner{grid-template-columns:1fr;gap:20px;padding:32px;}
+    .footer-top{grid-template-columns:1fr;}
+    .cart-drawer{width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="/">MF <span>Medical Supplies</span>™</a>
+  <ul class="nav-links">
+    <li><a onclick="scrollTo('#products')">Products</a></li>
+    <li><a onclick="scrollTo('#categories')">Categories</a></li>
+    <li><a href="/admin/">Admin</a></li>
+    <li><a onclick="scrollTo('#faq')">FAQ</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="btn-cart" onclick="openCart()">🛒 Cart <span class="cart-badge" id="cartBadge">0</span></button>
+    <button class="btn-primary" onclick="scrollTo('#products')">Shop Now</button>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">TGA Compliant · Australian Owned</div>
+    <h1 class="hero-title">Premium <em>Medical</em><br>Supplies.<br>Rapid Dispatch.</h1>
+    <p class="hero-sub">Precision consumables for clinics, practitioners, and healthcare professionals. Genuine brands. Sterile stock. Same-day shipping from Australian warehouses.</p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="scrollTo('#products')" style="font-size:15px;padding:12px 28px">Browse Range →</button>
+      <button class="btn-outline" onclick="scrollTo('#categories')">View Categories</button>
+    </div>
+    <div class="hero-stats">
+      <div><div class="stat-val" id="stat-products">—</div><div class="stat-lbl">Products in stock</div></div>
+      <div><div class="stat-val">24<span>h</span></div><div class="stat-lbl">Dispatch guarantee</div></div>
+      <div><div class="stat-val">100<span>%</span></div><div class="stat-lbl">TGA compliant</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TICKER ── -->
+<div class="ticker">
+  <div class="ticker-inner" id="tickerInner"></div>
+</div>
+
+<!-- ── CATEGORIES ── -->
+<div class="section" id="categories">
+  <div class="section-label">Browse by Category</div>
+  <h2 class="section-title">Shop by Category</h2>
+  <div class="cat-pills" id="catPills"></div>
+</div>
+
+<!-- ── PRODUCTS ── -->
+<div class="section" id="products">
+  <div class="flex-between" style="margin-bottom:32px">
+    <div>
+      <div class="section-label">All Products</div>
+      <h2 class="section-title">Our Range</h2>
+    </div>
+    <div id="productCount" style="font-size:14px;color:var(--slate)"></div>
+  </div>
+  <div id="productsContainer"></div>
+</div>
+
+<!-- ── TRUST ── -->
+<div class="trust-strip">
+  <div class="trust-grid">
+    <div><div class="trust-icon">🏛️</div><div class="trust-title">TGA Compliant</div><div class="trust-desc">All products meet Australian therapeutic standards</div></div>
+    <div><div class="trust-icon">✅</div><div class="trust-title">Genuine Brands</div><div class="trust-desc">100% authentic BD, Terumo, Nipro & Pfizer</div></div>
+    <div><div class="trust-icon">🚀</div><div class="trust-title">24h Dispatch</div><div class="trust-desc">From our Australian warehouse</div></div>
+    <div><div class="trust-icon">📦</div><div class="trust-title">Free Delivery</div><div class="trust-desc">On all orders Australia-wide</div></div>
+    <div><div class="trust-icon">🔒</div><div class="trust-title">Secure Checkout</div><div class="trust-desc">Powered by Stripe</div></div>
+    <div><div class="trust-icon">📋</div><div class="trust-title">Tax Invoice</div><div class="trust-desc">GST-compliant on every order</div></div>
+  </div>
+</div>
+
+<!-- ── PROMO ── -->
+<div class="section">
+  <div class="promo-banner">
+    <div>
+      <div class="promo-code">MFMED2026</div>
+      <div class="promo-title">10% Off Your First Order</div>
+      <div class="promo-sub">Apply at checkout. Valid on all products.</div>
+    </div>
+    <button class="btn-primary" onclick="scrollTo('#products')" style="font-size:15px;padding:14px 28px;white-space:nowrap">Shop Now →</button>
+  </div>
+</div>
+
+<!-- ── FAQ ── -->
+<div class="section" id="faq">
+  <div class="section-label">Support</div>
+  <h2 class="section-title" style="margin-bottom:40px">Frequently Asked Questions</h2>
+  <div class="faq-list" id="faqList"></div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="nav-logo" style="font-size:22px">MF <span style="color:var(--teal)">Medical Supplies</span>™</div>
+        <p>Precision medical supplies for Australian healthcare professionals. TGA-compliant consumables from world-leading manufacturers.</p>
+        <div class="nl-form"><input type="email" placeholder="Your email"><button class="btn-primary">Subscribe</button></div>
+      </div>
+      <div class="footer-col"><h5>Shop</h5><ul><li><a onclick="scrollTo('#products')">All Products</a></li><li><a href="#">Syringes</a></li><li><a href="#">Needles</a></li><li><a href="#">PPE</a></li></ul></div>
+      <div class="footer-col"><h5>Company</h5><ul><li><a href="#">About Us</a></li><li><a href="#">Contact</a></li><li><a href="#">Wholesale</a></li></ul></div>
+      <div class="footer-col"><h5>Policies</h5><ul><li><a href="#">Privacy Policy</a></li><li><a href="#">Shipping</a></li><li><a href="#">Returns</a></li><li><a href="#">Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© MF Medical Supplies 2026. All Rights Reserved.</span>
+      <div class="payment-icons">
+        <span class="payment-icon">VISA</span><span class="payment-icon">MC</span><span class="payment-icon">AMEX</span><span class="payment-icon">STRIPE</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ── CART DRAWER ── -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-head">
+    <h3>Your Cart</h3>
+    <button class="cart-close" onclick="closeCart()">×</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot" id="cartFoot" style="display:none">
+    <div class="cart-total"><span class="cart-total-label">Total</span><span class="cart-total-val" id="cartTotal">$0.00</span></div>
+    <p class="cart-note">Free delivery on all orders. GST included.</p>
+    <input class="email-input" type="email" id="checkoutEmail" placeholder="Your email (for order confirmation)">
+    <button class="btn-checkout" id="checkoutBtn" onclick="checkout()">Proceed to Checkout →</button>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG — replace these with your real keys ──
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── CART STATE ──
+let cart = JSON.parse(localStorage.getItem('mf_cart') || '[]');
+let allProducts = [];
+let activeCategory = 'all';
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', async () => {
+  renderTicker();
+  renderFAQ();
+  updateCartUI();
+  await loadProducts();
+});
+
+// ── PRODUCTS ──
+async function loadProducts() {
+  showSkeletons();
+
+  const { data, error } = await db
+    .from('products')
+    .select('*')
+    .eq('active', true)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    document.getElementById('productsContainer').innerHTML =
+      `<p style="color:var(--slate);text-align:center;padding:40px">Could not load products. Please try again.</p>`;
+    return;
+  }
+
+  allProducts = data || [];
+  document.getElementById('stat-products').innerHTML = `${allProducts.length}<span>+</span>`;
+  buildCategories();
+  renderProducts();
+}
+
+function showSkeletons() {
+  document.getElementById('productsContainer').innerHTML = `
+    <div class="loading-grid">
+      ${Array(8).fill(`<div class="skeleton"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line short"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div></div>`).join('')}
+    </div>`;
+}
+
+function buildCategories() {
+  const cats = ['All', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
+  document.getElementById('catPills').innerHTML = cats.map(c =>
+    `<button class="cat-pill ${c === 'All' ? 'active' : ''}" onclick="filterCat('${c}')">${c}</button>`
+  ).join('');
+}
+
+function filterCat(cat) {
+  activeCategory = cat;
+  document.querySelectorAll('.cat-pill').forEach(el => {
+    el.classList.toggle('active', el.textContent === cat);
+  });
+  renderProducts();
+}
+
+function renderProducts() {
+  const filtered = activeCategory === 'All'
+    ? allProducts
+    : allProducts.filter(p => p.category === activeCategory);
+
+  document.getElementById('productCount').textContent = `${filtered.length} product${filtered.length !== 1 ? 's' : ''}`;
+
+  if (filtered.length === 0) {
+    document.getElementById('productsContainer').innerHTML =
+      `<p style="color:var(--slate);text-align:center;padding:40px">No products in this category yet.</p>`;
+    return;
+  }
+
+  document.getElementById('productsContainer').innerHTML =
+    `<div class="products-grid">${filtered.map(productCard).join('')}</div>`;
+}
+
+function productCard(p) {
+  const inStock = p.stock > 0;
+  const badge = p.badge ? `<span class="prod-badge badge-${p.badge}">${p.badge}</span>` : '';
+  const outOverlay = !inStock ? `<div class="out-of-stock-overlay"><span class="out-badge">Out of Stock</span></div>` : '';
+  return `
+    <div class="prod-card">
+      <div class="prod-img">${badge}${p.emoji || '💊'}${outOverlay}</div>
+      <div class="prod-body">
+        <div class="prod-brand">${p.brand || ''}</div>
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-desc">${p.description || ''}</div>
+        <div class="prod-price-row">
+          <span class="prod-price">$${Number(p.price).toFixed(2)}</span>
+          <button class="btn-add" ${!inStock ? 'disabled' : ''} onclick="addToCart(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+            ${inStock ? '+ Add' : 'Sold Out'}
+          </button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── CART ──
+function addToCart(product) {
+  const existing = cart.find(i => i.id === product.id);
+  if (existing) {
+    existing.quantity++;
+  } else {
+    cart.push({ ...product, quantity: 1 });
+  }
+  saveCart();
+  updateCartUI();
+  showToast(`✓ ${product.name.slice(0, 30)}… added to cart`);
+  openCart();
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  saveCart();
+  updateCartUI();
+  renderCartItems();
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.quantity += delta;
+  if (item.quantity <= 0) { removeFromCart(id); return; }
+  saveCart();
+  updateCartUI();
+  renderCartItems();
+}
+
+function saveCart() {
+  localStorage.setItem('mf_cart', JSON.stringify(cart));
+}
+
+function updateCartUI() {
+  const total = cart.reduce((sum, i) => sum + i.quantity, 0);
+  document.getElementById('cartBadge').textContent = total;
+}
+
+function renderCartItems() {
+  const el = document.getElementById('cartItems');
+  const foot = document.getElementById('cartFoot');
+  if (cart.length === 0) {
+    el.innerHTML = `<div class="cart-empty"><div class="big">🛒</div>Your cart is empty.<br><small>Add some products to get started.</small></div>`;
+    foot.style.display = 'none';
+    return;
+  }
+  foot.style.display = 'block';
+  el.innerHTML = cart.map(i => `
+    <div class="cart-item">
+      <div class="cart-item-emoji">${i.emoji || '💊'}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${i.name}</div>
+        <div class="cart-item-brand">${i.brand || ''}</div>
+        <div class="cart-item-controls">
+          <button class="qty-btn" onclick="changeQty('${i.id}', -1)">−</button>
+          <span class="qty-val">${i.quantity}</span>
+          <button class="qty-btn" onclick="changeQty('${i.id}', 1)">+</button>
+          <button class="cart-remove" onclick="removeFromCart('${i.id}')">🗑</button>
+        </div>
+      </div>
+      <div class="cart-item-price">$${(i.price * i.quantity).toFixed(2)}</div>
+    </div>`).join('');
+
+  const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  document.getElementById('cartTotal').textContent = `$${total.toFixed(2)}`;
+}
+
+function openCart() {
+  renderCartItems();
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartDrawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCart() {
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── CHECKOUT ──
+async function checkout() {
+  if (cart.length === 0) return;
+  const btn = document.getElementById('checkoutBtn');
+  const email = document.getElementById('checkoutEmail').value;
+  btn.disabled = true;
+  btn.textContent = 'Redirecting to payment…';
+
+  try {
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: cart.map(i => ({ id: i.id, name: i.name, brand: i.brand, price: i.price, quantity: i.quantity })),
+        customerEmail: email,
+      }),
+    });
+    const data = await res.json();
+    if (data.url) {
+      localStorage.removeItem('mf_cart');
+      window.location.href = data.url;
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  } catch (err) {
+    showToast('❌ Checkout failed: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = 'Proceed to Checkout →';
+  }
+}
+
+// ── FAQ ──
+const faqs = [
+  { q:'Are all products TGA compliant?', a:'Yes. Every medical device and consumable we stock is registered with the Australian Therapeutic Goods Administration (TGA) to ensure it meets strict safety and quality standards.' },
+  { q:'Do you offer bulk or wholesale pricing for clinics?', a:'Yes. For high-volume orders or recurring clinic supplies, please contact our team to discuss wholesale pricing tiers.' },
+  { q:'How quickly is stock dispatched?', a:'All in-stock items are dispatched from our Australian warehouse within 24 hours (Monday–Friday).' },
+  { q:'Can I get a tax invoice?', a:'Absolutely. A GST-compliant tax invoice is automatically generated and emailed with every order.' },
+  { q:'Is the packaging discreet?', a:'All orders are shipped in plain, unbranded packaging to ensure discretion.' },
+];
+
+function renderFAQ() {
+  document.getElementById('faqList').innerHTML = faqs.map((f, i) => `
+    <div class="faq-item" id="faq${i}">
+      <button class="faq-q" onclick="toggleFAQ(${i})">${f.q} <span class="faq-chevron">⌄</span></button>
+      <div class="faq-a">${f.a}</div>
+    </div>`).join('');
+}
+
+function toggleFAQ(i) {
+  const item = document.getElementById('faq'+i);
+  const was = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('open'));
+  if (!was) item.classList.add('open');
+}
+
+// ── TICKER ──
+function renderTicker() {
+  const items = ['FREE STANDARD DELIVERY','USE CODE MFMED2026 FOR 10% OFF','COMPLIMENTARY ITEM WITH EVERY ORDER','100% TGA COMPLIANT STOCK','DISPATCHED WITHIN 24H'];
+  const html = [...items, ...items].map(t => `<span class="ticker-item">${t}</span><span style="padding:0 4px;opacity:.4">✦</span>`).join('');
+  document.getElementById('tickerInner').innerHTML = html;
+}
+
+// ── UTILS ──
+function scrollTo(sel) { document.querySelector(sel)?.scrollIntoView({ behavior:'smooth', block:'start' }); }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
